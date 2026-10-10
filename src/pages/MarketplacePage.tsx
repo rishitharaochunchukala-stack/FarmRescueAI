@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
-import type { Produce } from '@/types';
+import type { Produce, Destination } from '@/types';
 import { cropCategories } from '@/data/sampleData';
 import ProduceCard from '@/components/ProduceCard';
 import ProduceDetailModal from '@/components/ProduceDetailModal';
 
 interface MarketplacePageProps {
   produce: Produce[];
+  destinations?: Destination[];
 }
 
-export default function MarketplacePage({ produce }: MarketplacePageProps) {
+export default function MarketplacePage({ produce, destinations = [] }: MarketplacePageProps) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [maxPrice, setMaxPrice] = useState(1000);
@@ -109,7 +110,7 @@ export default function MarketplacePage({ produce }: MarketplacePageProps) {
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filtered.map((produce) => (
-            <ProduceCard key={produce.id} produce={produce} onView={setSelected} />
+            <ProduceCard key={produce.id} produce={produce} onView={setSelected} destinations={destinations} />
           ))}
         </div>
       ) : (
@@ -132,7 +133,7 @@ export default function MarketplacePage({ produce }: MarketplacePageProps) {
 
       {/* Detail modal */}
       {selected && (
-        <ProduceDetailModal produce={selected} onClose={() => setSelected(null)} />
+        <ProduceDetailModal produce={selected} onClose={() => setSelected(null)} destinations={destinations} />
       )}
     </div>
   );

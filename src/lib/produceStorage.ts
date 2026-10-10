@@ -1,11 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { produceList } from '@/data/sampleData';
-import type { Produce } from '@/types';
+import type { Produce, Destination, ProduceCondition, Availability, DestinationType } from '@/types';
 
-/**
- * Database row shape — uses snake_case column names.
- * The mapping functions convert between this and the camelCase Produce type.
- */
 interface ProduceRow {
   id: string;
   farmer_name: string;
@@ -20,6 +16,22 @@ interface ProduceRow {
   urgent: boolean;
   harvest_date: string;
   description: string | null;
+  availability: string;
+  condition: string;
+}
+
+interface DestinationRow {
+  id: string;
+  name: string;
+  destination_type: string;
+  accepted_conditions: string[];
+  location: string;
+  state: string;
+  min_quantity: number | null;
+  max_quantity: number | null;
+  unit: string | null;
+  contact: string;
+  verified: boolean;
 }
 
 function rowToProduce(row: ProduceRow): Produce {
@@ -37,6 +49,8 @@ function rowToProduce(row: ProduceRow): Produce {
     urgent: row.urgent,
     harvestDate: row.harvest_date,
     description: row.description ?? undefined,
+    availability: (row.availability ?? 'surplus') as Availability,
+    condition: (row.condition ?? 'fresh_good') as ProduceCondition,
   };
 }
 
@@ -55,14 +69,27 @@ function produceToRow(item: Produce): ProduceRow {
     urgent: item.urgent,
     harvest_date: item.harvestDate,
     description: item.description ?? null,
+    availability: item.availability,
+    condition: item.condition,
   };
 }
 
-/**
- * Load all produce listings from the database.
- * If the table is empty, seeds it with the demo sample data and returns that.
- * Returns { items, error } — never throws.
- */
+function rowToDestination(row: DestinationRow): Destination {
+  return {
+    id: row.id,
+    name: row.name,
+    destinationType: row.destination_type as DestinationType,
+    acceptedConditions: row.accepted_conditions as ProduceCondition[],
+    location: row.location,
+    state: row.state,
+    minQuantity: row.min_quantity !== null ? Number(row.min_quantity) : null,
+    maxQuantity: row.max_quantity !== null ? Number(row.max_quantity) : null,
+    unit: row.unit,
+    contact: row.contact,
+    verified: row.verified,
+  };
+}
+
 export async function loadProduce(): Promise<{
   items: Produce[];
   error: string | null;
@@ -89,10 +116,6 @@ export async function loadProduce(): Promise<{
   return { items: rows.map(rowToProduce), error: null };
 }
 
-/**
- * Insert the demo sample listings into the empty database.
- * Returns { items, error }.
- */
 async function seedDemoProduce(): Promise<{
   items: Produce[];
   error: string | null;
@@ -108,10 +131,6 @@ async function seedDemoProduce(): Promise<{
   return { items: produceList, error: null };
 }
 
-/**
- * Save a single produce listing to the database.
- * Returns { success, error }.
- */
 export async function saveProduce(
   item: Produce
 ): Promise<{ success: boolean; error: string | null }> {
@@ -124,4 +143,21 @@ export async function saveProduce(
   }
 
   return { success: true, error: null };
+}
+
+export async function loadDestinations(): Promise<{
+  items: Destination[];
+  error: string | null;
+}> {
+  const { data, error } = await supabase
+    .from('destinations')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    return { items: [], error: error.message };
+  }
+
+  const rows = (data ?? []) as DestinationRow[];
+  return { items: rows.map(rowToDestination), error: null };
 }

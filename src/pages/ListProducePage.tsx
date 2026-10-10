@@ -1,8 +1,15 @@
 import { useState } from 'react';
-import { CircleCheck as CheckCircle2, CircleAlert as AlertCircle, Package, Loader as Loader2 } from 'lucide-react';
-import type { Produce, Unit } from '@/types';
-import { unitOptions } from '@/data/sampleData';
+import {
+  CircleCheck as CheckCircle2,
+  CircleAlert as AlertCircle,
+  Package,
+  Loader as Loader2,
+  Info,
+} from 'lucide-react';
+import type { Produce, Unit, Availability, ProduceCondition } from '@/types';
+import { unitOptions, conditionOptions } from '@/data/sampleData';
 import { todayISO } from '@/utils/format';
+import ConditionBadge from '@/components/ConditionBadge';
 
 interface ListProducePageProps {
   onAddProduce: (produce: Produce) => Promise<{ success: boolean; error: string | null }>;
@@ -15,6 +22,7 @@ interface FormErrors {
   price?: string;
   location?: string;
   contact?: string;
+  condition?: string;
 }
 
 type FormState = {
@@ -28,6 +36,8 @@ type FormState = {
   contact: string;
   urgent: boolean;
   description: string;
+  availability: Availability;
+  condition: ProduceCondition;
 };
 
 const initialState: FormState = {
@@ -41,6 +51,8 @@ const initialState: FormState = {
   contact: '',
   urgent: false,
   description: '',
+  availability: 'surplus',
+  condition: 'fresh_good',
 };
 
 export default function ListProducePage({ onAddProduce }: ListProducePageProps) {
@@ -96,6 +108,8 @@ export default function ListProducePage({ onAddProduce }: ListProducePageProps) 
       urgent: form.urgent,
       harvestDate: todayISO(),
       description: form.description.trim() || undefined,
+      availability: form.availability,
+      condition: form.condition,
     };
 
     const { success, error } = await onAddProduce(newProduce);
@@ -279,6 +293,75 @@ export default function ListProducePage({ onAddProduce }: ListProducePageProps) 
             className={inputClass() + ' resize-none'}
           />
         </Field>
+
+        {/* Availability selector */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Availability
+          </label>
+          <div className="flex gap-3">
+            {(
+              [
+                { value: 'surplus', label: 'Surplus', desc: 'Excess produce to sell or donate' },
+                { value: 'not_surplus', label: 'Not Surplus', desc: 'Regular harvest, not excess' },
+              ] as { value: Availability; label: string; desc: string }[]
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => update('availability', opt.value)}
+                disabled={isSubmitting}
+                className={`flex-1 text-left p-3 rounded-lg border-2 transition-all ${
+                  form.availability === opt.value
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-200 hover:border-green-300'
+                } disabled:opacity-60 disabled:cursor-not-allowed`}
+              >
+                <p className="text-sm font-semibold text-gray-800">{opt.label}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Condition selector */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Condition <span className="text-red-500">*</span>
+          </label>
+          <div className="mb-2 flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+            <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-700">
+              Select the condition that best describes your produce. This determines where it gets
+              routed — buyers, processors, juice vendors, composting, or inspection. Be honest:
+              misclassifying spoiled produce as fresh is a health risk.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {conditionOptions.map((opt) => {
+              const selected = form.condition === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => update('condition', opt.value)}
+                  disabled={isSubmitting}
+                  className={`text-left p-3 rounded-lg border-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+                    selected
+                      ? 'border-green-500 bg-green-50 ring-1 ring-green-400'
+                      : 'border-gray-200 hover:border-green-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <ConditionBadge condition={opt.value} />
+                    {selected && <CheckCircle2 className="w-4 h-4 text-green-600 ml-auto" />}
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">{opt.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Urgent checkbox */}
         <label className="flex items-center gap-3 cursor-pointer">

@@ -9,12 +9,13 @@ import RescuePage from '@/pages/RescuePage';
 import AIPage from '@/pages/AIPage';
 import AboutPage from '@/pages/AboutPage';
 import ContactPage from '@/pages/ContactPage';
-import type { Page, Produce } from '@/types';
-import { loadProduce, saveProduce } from '@/lib/produceStorage';
+import type { Page, Produce, Destination } from '@/types';
+import { loadProduce, saveProduce, loadDestinations } from '@/lib/produceStorage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [produce, setProduce] = useState<Produce[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -23,7 +24,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Load persisted listings from the database on startup
   useEffect(() => {
     let cancelled = false;
 
@@ -35,6 +35,13 @@ export default function App() {
       } else {
         setProduce(items);
       }
+
+      const destResult = await loadDestinations();
+      if (cancelled) return;
+      if (!destResult.error) {
+        setDestinations(destResult.items);
+      }
+
       setIsLoading(false);
     })();
 
@@ -43,7 +50,6 @@ export default function App() {
     };
   }, []);
 
-  // Save a new listing to the database, then add to state on success
   const handleAddProduce = useCallback(
     async (item: Produce): Promise<{ success: boolean; error: string | null }> => {
       const { success, error } = await saveProduce(item);
@@ -55,7 +61,6 @@ export default function App() {
     []
   );
 
-  // Scroll to top on page change
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [currentPage]);
@@ -67,11 +72,11 @@ export default function App() {
       case 'dashboard':
         return <DashboardPage produce={produce} />;
       case 'marketplace':
-        return <MarketplacePage produce={produce} />;
+        return <MarketplacePage produce={produce} destinations={destinations} />;
       case 'list-produce':
         return <ListProducePage onAddProduce={handleAddProduce} />;
       case 'rescue':
-        return <RescuePage produce={produce} />;
+        return <RescuePage produce={produce} destinations={destinations} />;
       case 'ai':
         return <AIPage />;
       case 'about':

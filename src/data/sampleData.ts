@@ -1,4 +1,4 @@
-import type { Produce } from '@/types';
+import type { Produce, ProduceCondition } from '@/types';
 
 export const produceList: Produce[] = [
   {
@@ -15,6 +15,8 @@ export const produceList: Produce[] = [
     urgent: false,
     harvestDate: '2026-10-07',
     description: 'Vine-ripened Roma tomatoes, freshly harvested and sorted by hand.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p2',
@@ -30,6 +32,8 @@ export const produceList: Produce[] = [
     urgent: true,
     harvestDate: '2026-10-08',
     description: 'Bright red bell peppers with thick walls and sweet flavour.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p3',
@@ -45,6 +49,8 @@ export const produceList: Produce[] = [
     urgent: false,
     harvestDate: '2026-10-05',
     description: 'Grown without pesticides. Sweet, crunchy, and freshly washed.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p4',
@@ -60,6 +66,8 @@ export const produceList: Produce[] = [
     urgent: false,
     harvestDate: '2026-10-06',
     description: 'Dense, crisp heads of green cabbage — perfect for markets and kitchens.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p5',
@@ -75,6 +83,8 @@ export const produceList: Produce[] = [
     urgent: true,
     harvestDate: '2026-10-09',
     description: 'Tender baby spinach leaves. Must sell within 48 hours — very perishable.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p6',
@@ -90,6 +100,8 @@ export const produceList: Produce[] = [
     urgent: false,
     harvestDate: '2026-10-07',
     description: 'Golden sweet corn harvested at peak ripeness — 40 ears per crate.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p7',
@@ -105,6 +117,8 @@ export const produceList: Produce[] = [
     urgent: true,
     harvestDate: '2026-10-09',
     description: 'Sweet, juicy strawberries — highly perishable, needs a buyer today!',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
   {
     id: 'p8',
@@ -120,6 +134,8 @@ export const produceList: Produce[] = [
     urgent: false,
     harvestDate: '2026-10-04',
     description: 'Cured purple onions in 25kg sacks — good for storage and transport.',
+    availability: 'surplus',
+    condition: 'fresh_good',
   },
 ];
 
@@ -139,3 +155,59 @@ export const unitOptions: { value: string; label: string }[] = [
   { value: 'sack', label: 'Sacks' },
   { value: 'bunch', label: 'Bunches' },
 ];
+
+export interface ConditionOption {
+  value: ProduceCondition;
+  label: string;
+  description: string;
+  badgeClass: string;
+  iconClass: string;
+  dotClass: string;
+}
+
+export const conditionOptions: ConditionOption[] = [
+  {
+    value: 'fresh_good',
+    label: 'Fresh / Good',
+    description: 'Freshly harvested, visually appealing, and safe for consumption.',
+    badgeClass: 'bg-green-100 text-green-700 border-green-300',
+    iconClass: 'text-green-600',
+    dotClass: 'bg-green-500',
+  },
+  {
+    value: 'cosmetically_damaged',
+    label: 'Cosmetically Damaged',
+    description: 'Surface blemishes or minor bruising — still safe to eat or process, but not retail-grade.',
+    badgeClass: 'bg-amber-100 text-amber-700 border-amber-300',
+    iconClass: 'text-amber-600',
+    dotClass: 'bg-amber-500',
+  },
+  {
+    value: 'overripe',
+    label: 'Overripe',
+    description: 'Past peak ripeness but still safe. Suitable for juices, smoothies, or processing. Perishable — act fast.',
+    badgeClass: 'bg-orange-100 text-orange-700 border-orange-300',
+    iconClass: 'text-orange-600',
+    dotClass: 'bg-orange-500',
+  },
+  {
+    value: 'rotten_decayed',
+    label: 'Rotten / Decayed',
+    description: 'Moldy, fermented, contaminated, or spoiled. Not safe for human consumption. Route to composting.',
+    badgeClass: 'bg-red-100 text-red-700 border-red-300',
+    iconClass: 'text-red-600',
+    dotClass: 'bg-red-500',
+  },
+  {
+    value: 'uncertain',
+    label: 'Uncertain / Needs Inspection',
+    description: 'Condition cannot be determined without physical inspection. No routing until inspected.',
+    badgeClass: 'bg-gray-200 text-gray-700 border-gray-400',
+    iconClass: 'text-gray-600',
+    dotClass: 'bg-gray-500',
+  },
+];
+
+export function getConditionOption(condition: ProduceCondition): ConditionOption {
+  return conditionOptions.find((o) => o.value === condition) ?? conditionOptions[0];
+}

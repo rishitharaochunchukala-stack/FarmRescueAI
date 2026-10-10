@@ -1,13 +1,18 @@
-import type { Produce } from '@/types';
+import type { Produce, Destination } from '@/types';
 import { MapPin, Phone, Package, Tag, TriangleAlert as AlertTriangle, Calendar } from 'lucide-react';
 import { formatDate } from '@/utils/format';
+import ConditionBadge from '@/components/ConditionBadge';
+import { getRecommendation } from '@/lib/recommendationEngine';
 
 interface ProduceCardProps {
   produce: Produce;
   onView?: (produce: Produce) => void;
+  destinations?: Destination[];
 }
 
-export default function ProduceCard({ produce, onView }: ProduceCardProps) {
+export default function ProduceCard({ produce, onView, destinations = [] }: ProduceCardProps) {
+  const rec = getRecommendation(produce, destinations);
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col">
       {/* Image */}
@@ -26,12 +31,21 @@ export default function ProduceCard({ produce, onView }: ProduceCardProps) {
         <span className="absolute top-3 right-3 bg-white/95 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
           {produce.category}
         </span>
+        {produce.availability === 'surplus' && (
+          <span className="absolute bottom-3 right-3 bg-green-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
+            Surplus
+          </span>
+        )}
       </div>
 
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
         <h3 className="font-semibold text-gray-800 text-lg">{produce.cropName}</h3>
-        <p className="text-sm text-gray-500 mb-3">by {produce.farmerName}</p>
+        <p className="text-sm text-gray-500 mb-2">by {produce.farmerName}</p>
+
+        <div className="mb-2">
+          <ConditionBadge condition={produce.condition} />
+        </div>
 
         <div className="space-y-1.5 text-sm text-gray-600 mb-3">
           <div className="flex items-center gap-2">
@@ -64,6 +78,25 @@ export default function ProduceCard({ produce, onView }: ProduceCardProps) {
         {produce.description && (
           <p className="text-sm text-gray-500 mb-3 line-clamp-2">{produce.description}</p>
         )}
+
+        {/* One-line recommendation summary */}
+        <div
+          className={`text-xs rounded-lg p-2 mb-3 ${
+            rec.humanConsumptionBlocked
+              ? 'bg-red-50 text-red-700'
+              : rec.noDestinationFound
+                ? 'bg-amber-50 text-amber-700'
+                : 'bg-green-50 text-green-700'
+          }`}
+        >
+          {rec.inspectionRequired
+            ? 'Inspection required before routing'
+            : rec.humanConsumptionBlocked
+              ? 'Route to composting only'
+              : rec.noDestinationFound
+                ? 'No verified destination in your region'
+                : `Recommended: ${rec.destinationTypeLabel}`}
+        </div>
 
         {onView && (
           <button

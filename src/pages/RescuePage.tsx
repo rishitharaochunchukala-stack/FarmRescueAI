@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { TriangleAlert as AlertTriangle, Clock, Zap } from 'lucide-react';
-import type { Produce } from '@/types';
+import type { Produce, Destination } from '@/types';
 import ProduceCard from '@/components/ProduceCard';
 import ProduceDetailModal from '@/components/ProduceDetailModal';
 
 interface RescuePageProps {
   produce: Produce[];
+  destinations?: Destination[];
 }
 
-export default function RescuePage({ produce }: RescuePageProps) {
+export default function RescuePage({ produce, destinations = [] }: RescuePageProps) {
   const [selected, setSelected] = useState<Produce | null>(null);
   const urgentItems = produce.filter((p) => p.urgent);
 
@@ -50,7 +51,7 @@ export default function RescuePage({ produce }: RescuePageProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {urgentItems.map((item) => (
-              <ProduceCard key={item.id} produce={item} onView={setSelected} />
+              <ProduceCard key={item.id} produce={item} onView={setSelected} destinations={destinations} />
             ))}
           </div>
         </>
@@ -88,7 +89,7 @@ export default function RescuePage({ produce }: RescuePageProps) {
       </div>
 
       {selected && (
-        <ProduceDetailModal produce={selected} onClose={() => setSelected(null)} />
+        <ProduceDetailModal produce={selected} onClose={() => setSelected(null)} destinations={destinations} />
       )}
     </div>
   );
