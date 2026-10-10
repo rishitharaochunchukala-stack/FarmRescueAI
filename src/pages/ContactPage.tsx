@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, MapPin, Phone, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, MapPin, Phone, Send, CircleCheck as CheckCircle2 } from 'lucide-react';
 
 interface ContactErrors {
   name?: string;

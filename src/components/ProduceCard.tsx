@@ -1,5 +1,5 @@
 import type { Produce } from '@/types';
-import { MapPin, Phone, Package, Tag, AlertTriangle, Calendar } from 'lucide-react';
+import { MapPin, Phone, Package, Tag, TriangleAlert as AlertTriangle, Calendar } from 'lucide-react';
 import { formatDate } from '@/utils/format';
 
 interface ProduceCardProps {

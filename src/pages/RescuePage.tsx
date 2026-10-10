@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Clock, Zap } from 'lucide-react';
+import { TriangleAlert as AlertTriangle, Clock, Zap } from 'lucide-react';
 import type { Produce } from '@/types';
 import ProduceCard from '@/components/ProduceCard';
 import ProduceDetailModal from '@/components/ProduceDetailModal';

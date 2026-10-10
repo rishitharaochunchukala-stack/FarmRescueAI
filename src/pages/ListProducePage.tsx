@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, AlertCircle, Package, Loader2 } from 'lucide-react';
+import { CircleCheck as CheckCircle2, CircleAlert as AlertCircle, Package, Loader as Loader2 } from 'lucide-react';
 import type { Produce, Unit } from '@/types';
 import { unitOptions } from '@/data/sampleData';
 import { todayISO } from '@/utils/format';

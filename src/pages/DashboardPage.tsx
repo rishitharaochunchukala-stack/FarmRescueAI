@@ -1,11 +1,4 @@
-import {
-  Package,
-  TrendingUp,
-  Wallet,
-  AlertTriangle,
-  ShoppingBag,
-  Leaf,
-} from 'lucide-react';
+import { Package, TrendingUp, Wallet, TriangleAlert as AlertTriangle, ShoppingBag, Leaf } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import type { Produce } from '@/types';
 
