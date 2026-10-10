@@ -67,6 +67,33 @@ export interface AIResponse {
   timestamp: string;
 }
 
+export type TomatoMaterialType = 'surplus_tomatoes' | 'tomato_skins' | 'tomato_pulp' | 'processing_residue';
+
+export type TomatoMaterialStatus = 'available' | 'contact_requested' | 'collected' | 'completed';
+
+export interface TomatoMaterial {
+  id: string;
+  materialType: TomatoMaterialType;
+  quantity: number;
+  unit: 'kg' | 'tonne';
+  condition: ProduceCondition;
+  location: string;
+  contact: string;
+  availability: TomatoMaterialStatus;
+  intendedDestination?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface SuspiciousReport {
+  id: string;
+  listingId: string | null;
+  reason: string;
+  reporterContact: string | null;
+  status: string;
+  createdAt: string;
+}
+
 export type Page =
   | 'home'
   | 'dashboard'
@@ -74,5 +101,7 @@ export type Page =
   | 'list-produce'
   | 'rescue'
   | 'ai'
+  | 'circular-hub'
+  | 'cyber-shield'
   | 'about'
   | 'contact';

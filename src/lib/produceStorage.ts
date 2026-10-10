@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { produceList } from '@/data/sampleData';
-import type { Produce, Destination, ProduceCondition, Availability, DestinationType } from '@/types';
+import type { Produce, Destination, ProduceCondition, Availability, DestinationType, TomatoMaterial, TomatoMaterialType, TomatoMaterialStatus, SuspiciousReport } from '@/types';
 
 interface ProduceRow {
   id: string;
@@ -32,6 +32,43 @@ interface DestinationRow {
   unit: string | null;
   contact: string;
   verified: boolean;
+}
+
+interface TomatoMaterialRow {
+  id: string;
+  material_type: string;
+  quantity: number;
+  unit: string;
+  condition: string;
+  location: string;
+  contact: string;
+  availability: string;
+  intended_destination: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+interface TomatoMaterialPublicRow {
+  id: string;
+  material_type: string;
+  quantity: number;
+  unit: string;
+  condition: string;
+  location: string;
+  contact_masked: string;
+  availability: string;
+  intended_destination: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+interface SuspiciousReportRow {
+  id: string;
+  listing_id: string | null;
+  reason: string;
+  reporter_contact: string | null;
+  status: string;
+  created_at: string;
 }
 
 function rowToProduce(row: ProduceRow): Produce {
@@ -90,12 +127,44 @@ function rowToDestination(row: DestinationRow): Destination {
   };
 }
 
+function rowToTomatoMaterialPublic(row: TomatoMaterialPublicRow): TomatoMaterial {
+  return {
+    id: row.id,
+    materialType: row.material_type as TomatoMaterialType,
+    quantity: Number(row.quantity),
+    unit: row.unit as 'kg' | 'tonne',
+    condition: row.condition as ProduceCondition,
+    location: row.location,
+    contact: row.contact_masked,
+    availability: row.availability as TomatoMaterialStatus,
+    intendedDestination: row.intended_destination ?? undefined,
+    notes: row.notes ?? undefined,
+    createdAt: row.created_at,
+  };
+}
+
+function tomatoMaterialToRow(item: Omit<TomatoMaterial, 'id' | 'createdAt'>): TomatoMaterialRow {
+  return {
+    id: crypto.randomUUID(),
+    material_type: item.materialType,
+    quantity: item.quantity,
+    unit: item.unit,
+    condition: item.condition,
+    location: item.location,
+    contact: item.contact,
+    availability: item.availability,
+    intended_destination: item.intendedDestination ?? null,
+    notes: item.notes ?? null,
+    created_at: new Date().toISOString(),
+  };
+}
+
 export async function loadProduce(): Promise<{
   items: Produce[];
   error: string | null;
 }> {
   const { data, error } = await supabase
-    .from('produce')
+    .from('produce_public')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -160,4 +229,51 @@ export async function loadDestinations(): Promise<{
 
   const rows = (data ?? []) as DestinationRow[];
   return { items: rows.map(rowToDestination), error: null };
+}
+
+export async function loadTomatoMaterials(): Promise<{
+  items: TomatoMaterial[];
+  error: string | null;
+}> {
+  const { data, error } = await supabase
+    .from('tomato_materials_public')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return { items: [], error: error.message };
+  }
+
+  const rows = (data ?? []) as TomatoMaterialPublicRow[];
+  return { items: rows.map(rowToTomatoMaterialPublic), error: null };
+}
+
+export async function saveTomatoMaterial(
+  item: Omit<TomatoMaterial, 'id' | 'createdAt'>
+): Promise<{ success: boolean; error: string | null }> {
+  const row = tomatoMaterialToRow(item);
+
+  const { error } = await supabase.from('tomato_materials').insert(row);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, error: null };
+}
+
+export async function saveSuspiciousReport(
+  report: Omit<SuspiciousReport, 'id' | 'status' | 'createdAt'>
+): Promise<{ success: boolean; error: string | null }> {
+  const { error } = await supabase.from('suspicious_reports').insert({
+    listing_id: report.listingId,
+    reason: report.reason,
+    reporter_contact: report.reporterContact,
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, error: null };
 }
